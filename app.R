@@ -1,21 +1,28 @@
-# Global variables can go here
-n <- 200
+library(shiny)
+library(leaflet)
 
+r_colors <- rgb(t(col2rgb(colors()) / 255))
+names(r_colors) <- colors()
 
-# Define the UI
-ui <- bootstrapPage(
-  numericInput('n', 'Number of obs', n),
-  plotOutput('plot')
+ui <- fluidPage(
+  leafletOutput("mymap"),
+  p(),
+  actionButton("recalc", "New points")
 )
 
-
-# Define the server code
-server <- function(input, output) {
-  output$plot <- renderPlot({
-    hist(runif(input$n))
+server <- function(input, output, session) {
+  
+  points <- eventReactive(input$recalc, {
+    cbind(13,48)
+  }, ignoreNULL = FALSE)
+  
+  output$mymap <- renderLeaflet({
+    leaflet() %>%
+      addProviderTiles(providers$Stamen.TonerLite,
+                       options = providerTileOptions(noWrap = TRUE)
+      ) %>%
+      addMarkers(data = points())
   })
 }
 
-# Return a Shiny app object
-shinyApp(ui = ui, server = server)
-
+shinyApp(ui, server)
