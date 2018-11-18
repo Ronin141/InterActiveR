@@ -6,14 +6,13 @@ names(r_colors) <- colors()
 
 ui <- fluidPage(
   leafletOutput("mymap"),
-  p(),
-  actionButton("recalc", "New points")
+  p()
 )
 
 server <- function(input, output, session) {
   
   points <- eventReactive(input$recalc, {
-    cbind(13,48)
+    cbind(statistic_data_with_country$Latitude,statistic_data_with_country$Longitude)
   }, ignoreNULL = FALSE)
   
   output$mymap <- renderLeaflet({
