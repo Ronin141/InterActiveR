@@ -3,7 +3,7 @@ library(shiny)
 dat <- read.csv("line_data.csv")
 datall <- read.csv("statistic_data.csv")
 year <- dat$years
-rangeData <- 5000
+rangeData <- 200000
 
 ui <- fluidPage(
   
@@ -70,15 +70,15 @@ server <- function(input, output) {
    
       
     
-    yrange <- c(0,rangeData)
+    yrange <- c(0,input$rangeData)
     xrange <- range(year)
-    plot(xrange,yrange,type="n",xlab="",ylab="Growth rate (percent)",cex.lab=1.5,
-         main=paste("GDP-weighted averages shown for", chartTitle),
-         sub=c("Data: IMF WEO (10/2015). Chart J. Zilinsky \n Note: Data for 2016 are IMF projections"))
+    plot(xrange,yrange,type="n",xlab="",ylab="Amount(people) \n Earnings(Dollars) ",cex.lab=1.5,
+         main=paste("Amount of tourist and earnings to Thailand from", chartTitle),
+         sub=c("Data: Iกองเศรษฐกิจการท่องเที่ยวและกีฬา (ณ วันที่ 11 มกราคม 2561P)"))
     lines(year,chartData[[1]],col="aquamarine4",lwd=3)
     lines(year[1:6],na.omit(chartData[[2]]),col="firebrick3",lwd=3)
     abline(v=input$vertical,lty=2) 
-    legend(2016,50000,c("Real government spending","Real GDP"), 
+    legend(2016,50000,c("Amount of tourist","Average earning"), 
            col=c('firebrick3','aquamarine4'),pch=15,ncol=1,bty ="n",cex=1.1)
     
     if (input$hor) {
