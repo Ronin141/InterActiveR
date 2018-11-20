@@ -1,81 +1,44 @@
 library(shiny)
-library(datasets)
-library(readr)
-dat <- read.csv("~/InterActiveR/line_data.csv")
-years <- dat$years
+library(ggmap)
+library(maptools)
+library(maps)
+# library(leaflet)
+
+r_colors <- rgb(t(col2rgb(colors()) / 255))
+names(r_colors) <- colors()
 
 ui <- fluidPage(
-  
-  titlePanel("Government spending and GDP growth"),
-  
-  sidebarLayout(
-    sidebarPanel(
-      
-      radioButtons("radio", label = h3("Select the sample of countries"),
-                   choices = list("EastAsia", "Europe",
-                                  "TheAmericas", "SouthAsia","Oceania","MiddleEast","Africa"),selected = "World"),
-      
-      selectInput("vertical","Show vertical line in year(s):", 
-                  choices = unique(dat$years),multiple=TRUE
-      ),
-      
-      checkboxInput("hor", "Show horizontal axis", TRUE)
-      
-    ),
-    
-    mainPanel(
-      #    h2("main panel"),    
-      #    textOutput("text1"),
-      plotOutput("lineChart")
-    )   
-  )      
+  leafletOutput("mymap"),
+  p()
 )
 
-server <- function(input, output) {
+server <- function(input, output, session) {
   
-  #  output$text1 <- renderText({ 
-  #    paste("The chart is showing fiscal stimulus and real economy growthYou have selected ", input$radio)
-  #  })
+  # points <- eventReactive(input$recalc, {
+  #   cbind(statistic_data_with_country$Latitude,statistic_data_with_country$Longitude)
+  # }, ignoreNULL = FALSE)
+  # 
+  # output$mymap <- renderLeaflet({
+  #   leaflet() %>%
+  #     addProviderTiles(providers$Stamen.TonerLite,
+  #                      options = providerTileOptions(noWrap = TRUE)
+  #     ) %>%
+  #     addMarkers(data = points())
+  # })
+  visited <- c(statistic_data_with_country$`Country of Nationality`)
+  ll.visited <- geocode(visited)
+  visit.x <- ll.visited$lon
+  visit.y <- ll.visited$lat
+  map("world", fill=TRUE, col="white", bg="lightblue", ylim=c(-60, 90), mar=c(0,0,0,0))
+  points(visit.x,visit.y, col="red", pch=16)
   
-  output$lineChart <- renderPlot({  
-    chartData <- switch(input$radio,
-                        "EastAsia" = list(dat$gr_EastAsia,dat$re_EastAsia),
-                        "Europe" = list(dat$gr_Europe,dat$re_Europe),
-                        "TheAmericas" = list(dat$gr_TheAmericas,dat$re_TheAmericas),
-                        "SouthAsia" = list(dat$gr_SouthAsia,dat$re_SouthAsia) ,
-                        "Oceania" = list(dat$gr_Oceania,dat$re_Oceania) ,
-                        "MiddleEast" = list(dat$gr_MiddleEast,dat$re_MiddleEast) ,
-                        "Africa" = list(dat$gr_Africa,dat$re_Africa)
-                        
-    )  
-    
-    chartTitle <- switch(input$radio,
-                         "EastAsia" = "East Asia",
-                         "Europe" = "Europe",
-                         "TheAmericas" = "TheAmericas",
-                         "SouthAsia" = "SouthAsia",
-                         "Oceania"="Oceania",
-                         "MiddleEast" = "MiddleEast",
-                         "Africa"="Africa"
-    )
-    
-    yrange <- c(1:10000)
-    xrange <- range(years)
-    plot(xrange,yrange,type="n",xlab="",ylab="Growth rate (percent)",cex.lab=1.5,
-         main=paste("GDP-weighted averages shown for", chartTitle),
-         sub=c("Data: IMF WEO (10/2015). Chart J. Zilinsky \n Note: Data for 2016 are IMF projections"))
-    lines(years,chartData[[1]],col="aquamarine4",lwd=3)
-    lines(years[1:2],na.omit(chartData[[2]]),col="firebrick3",lwd=3)
-    abline(v=input$vertical,lty=2) 
-    legend(2016,8,c("Real government spending","Real GDP"), 
-           col=c('firebrick3','aquamarine4'),pch=15,ncol=1,bty ="n",cex=1.1)
-    
-    if (input$hor) {
-      abline(h=0)  
-    } 
-  },height = 500, width = 600)
-  
+  # mp <- NULL
+  # mapWorld <- borders("world", colour="gray50", fill="gray50") # create a layer of borders
+  # mp <- ggplot() +   mapWorld
+  # 
+  # #Now Layer the cities on top
+  # mp <- mp+ geom_point(aes(x=visit.x, y=visit.y) ,color="blue", size=3) 
+  # mp
 }
 
-shinyApp(ui = ui, server = server)
-
+shinyApp(ui, server)
