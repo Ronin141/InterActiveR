@@ -1,7 +1,8 @@
 library(shiny)
-
+library(leaflet)
 dat <- read.csv("line_data.csv")
 datall <- read.csv("statistic_data.csv")
+country = read.csv("statistic_data_with_country.csv")
 year <- dat$years
 rangeData <- 200000
 
@@ -32,6 +33,7 @@ ui <- fluidPage(
       #    textOutput("text1"),
       tabsetPanel(type = "tabs",
                   tabPanel("Plot", plotOutput("lineChart")),
+                  tabPanel("Map", leafletOutput("map")),
                   tabPanel("Summary", verbatimTextOutput("summary")),
                   tabPanel("Table", tableOutput("table")),
                   tabPanel("TableAll", tableOutput("tableall"))
@@ -72,19 +74,32 @@ server <- function(input, output) {
     
     yrange <- c(0,input$rangeData)
     xrange <- range(year)
-    plot(xrange,yrange,type="n",xlab="",ylab="Amount(people) \n Earnings(Dollars) ",cex.lab=1.5,
+    plot(xrange,yrange,type="n",xlab="",ylab="Amount(people) \n Earnings(Thai Baht) ",cex.lab=1.5,
          main=paste("Amount of tourist and earnings to Thailand from", chartTitle),
-         sub=c("Data: Iกองเศรษฐกิจการท่องเที่ยวและกีฬา (ณ วันที่ 11 มกราคม 2561P)"))
+         sub=c("Data: กองเศรษฐกิจการท่องเที่ยวและกีฬา (ณ วันที่ 11 มกราคม 2561P)"))
     lines(year,chartData[[1]],col="aquamarine4",lwd=3)
     lines(year[1:6],na.omit(chartData[[2]]),col="firebrick3",lwd=3)
     abline(v=input$vertical,lty=2) 
-    legend(2016,50000,c("Amount of tourist","Average earning"), 
+    legend(2016,15000,c("Amount of tourist","Average earning"), 
            col=c('firebrick3','aquamarine4'),pch=15,ncol=1,bty ="n",cex=1.1)
     
     if (input$hor) {
       abline(h=0)  
     } 
   },height = 700, width = 800)
+  
+  output$map <- renderLeaflet({
+    content <- paste(sep = "<br/>",
+                     data$Country.of.Nationality,
+                     "Number of Tourists:",data$Number,
+                     "Average Earnings(฿):",data$Receipts...Mil.Baht.)
+    
+    leaflet() %>% addTiles() %>%
+      addPopups(country$Longitude, country$Latitude, content,
+                options = popupOptions(closeButton = FALSE)
+      )
+    
+  })
   
   output$summary <- renderPrint({
     ee <- dat
@@ -97,6 +112,12 @@ server <- function(input, output) {
   output$tableall <- renderTable({
     datall
   })
+  
+  # observe({
+  #   tab1 <- leafletProxy('Map', data = pts) %>%
+  #     clearMarkers() %>% 
+  #     addCircleMarkers(lng = ~x, lat = ~y, radius = input$radius)
+  # })
 }
 
 shinyApp(ui = ui, server = server)
