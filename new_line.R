@@ -8,7 +8,7 @@ rangeData <- 200000
 
 ui <- fluidPage(
   
-  titlePanel("Government spending and GDP growth"),
+  titlePanel("Average Amount and earnings of Tourist to Thailand Form 2012-2017"),
   
   sidebarLayout(
     sidebarPanel(
